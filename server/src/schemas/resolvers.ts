@@ -1,22 +1,8 @@
 import { Request, Response } from 'express';
+
 import User from '../models/User.js';
 import { signToken } from '../services/auth.js';
 
-interface User {
-    _id: string;
-    username: string;
-    email: string;
-    password: string;
-    savedBooks: Array<{
-        bookId: string;
-        authors: string[];
-        description: string;
-        title: string;
-        image: string;
-        link: string;
-    }>;
-    isCorrectPassword(password: string): Promise<boolean>;
-}
 
 const resolvers = {
     Query: {
@@ -33,7 +19,7 @@ const resolvers = {
         },
     },
     Mutation: {
-        createUser: async (_: any, args: any, context: { req: Request; res: Response }) => {
+        createUser: async (_: any, args: any) => {
             const user = await User.create(args);
 
             if (!user) {
