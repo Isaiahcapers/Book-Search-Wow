@@ -2,7 +2,7 @@ import gql from 'graphql-tag';
 
 const typeDefs = gql`
     type Query {
-        me: User
+        getSingleUser: User
     }
 
     input UserInput {
@@ -28,6 +28,12 @@ const typeDefs = gql`
         savedBooks: [Book]
         }
 
+    input UserInput {
+        username: String!
+        email: String!
+        password: String!
+    }
+
     type Book {
         bookId: ID
         authors: [String]
@@ -48,8 +54,6 @@ const typeDefs = gql`
         saveBook(input: BookInput!): User
         removeBook(bookId: String!): User
     }
-
-
     `;
 
     export default typeDefs;

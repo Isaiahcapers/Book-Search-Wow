@@ -5,6 +5,15 @@ import bcrypt from 'bcrypt';
 import bookSchema from './Book.js';
 import type { BookDocument } from './Book.js';
 
+export interface UserContext {
+    username: string | null;
+    email: string | null;
+    _id: Schema.Types.ObjectId | null;
+    password: string | null;
+    savedBooks: BookDocument[] | null;
+}
+
+
 export interface UserDocument extends Document {
   id: string;
   username: string;

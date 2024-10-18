@@ -13,7 +13,7 @@ const server = new ApolloServer({
 });
 const startApolloServer = async () => {
   await server.start();
-  await db();
+  await db;
 
   const PORT = process.env.PORT || 3001;
   const app = express();
@@ -40,3 +40,5 @@ const startApolloServer = async () => {
     console.log(`Use GraphQL at http://localhost:${PORT}/graphql`);
   });
 };
+
+startApolloServer();

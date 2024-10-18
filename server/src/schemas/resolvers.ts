@@ -1,21 +1,26 @@
 import { Request, Response } from 'express';
 
 import User from '../models/User.js';
-import { signToken } from '../services/auth.js';
-
+import { signToken, AuthenticationError } from '../services/auth.js';
+import { UserContext } from '../models/User.js';
 
 const resolvers = {
     Query: {
-        getSingleUser: async (_: any, { id, username }: { id: string; username: string }, context: { req: Request; res: Response }) => {
+        getSingleUser: async (_: any, _args: any, context: UserContext  | null) => {
+            if (context) {
             const foundUser = await User.findOne({
-                $or: [{ _id: context.req.user ? context.req.user._id : id }, { username }],
+                _id: context._id,
             });
-
+        
             if (!foundUser) {
                 throw new Error('Cannot find a user with this id!');
             }
 
             return foundUser;
+            }
+            else {
+                throw new Error('You need to be logged in!');
+            }
         },
     },
     Mutation: {
@@ -26,22 +31,32 @@ const resolvers = {
                 throw new Error('Something is wrong!');
             }
             const token = signToken(user.username, user.password, user._id);
-            return { token, user };
+            return { 
+                token, 
+                user: {
+                    username: user.username,
+                    email: user.email,
+                    _id: user._id
+                }
+            };
         },
-        login: async (_: any, { username, email, password }: { username: string; email: string; password: string }, context: { req: Request; res: Response }) => {
-            const user = await User.findOne({ $or: [{ username }, { email }] });
-            if (!user) {
-                throw new Error("Can't find this user");
+        login: async (_parent: any, { email, password }: { email: string; password: string }): Promise<{ token: string; user: UserContext }> => {
+            const user = await User.findOne({ email });
+      
+            if (!user || !(await user.isCorrectPassword(password))) {
+              throw new AuthenticationError('Invalid credentials');
             }
-
-            const correctPw = await user.isCorrectPassword(password);
-
-            if (!correctPw) {
-                throw new Error('Wrong password!');
-            }
-            const token = signToken(user.username, user.password, user._id);
-            return { token, user };
-        },
+      
+            const token = signToken(user.username, user.email, user._id);
+            return { 
+                token, 
+                user: {
+                    username: user.username,
+                    email: user.email,
+                    _id: user._id
+                }
+            };
+          },
         saveBook: async (_: any, args: any, context: { req: Request; res: Response }) => {
             try {
                 const updatedUser = await User.findOneAndUpdate(
