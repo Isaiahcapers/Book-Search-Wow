@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-
+import { Schema } from 'mongoose';
 import User from '../models/User.js';
 import { signToken, AuthenticationError } from '../services/auth.js';
 import { UserContext } from '../models/User.js';
@@ -36,7 +36,7 @@ const resolvers = {
                 user: {
                     username: user.username,
                     email: user.email,
-                    _id: user._id
+                    _id: user._id as Schema.Types.ObjectId
                 }
             };
         },
@@ -53,7 +53,9 @@ const resolvers = {
                 user: {
                     username: user.username,
                     email: user.email,
-                    _id: user._id
+                    _id: user._id as Schema.Types.ObjectId,
+                    password: null,
+                    savedBooks: null
                 }
             };
           },
@@ -70,7 +72,7 @@ const resolvers = {
                 throw new Error('Error saving book');
             }
         },
-        deleteBook: async (_: any, { bookId }: { bookId: string }, context: { req: Request; res: Response }) => {
+        removeBook: async (_: any, { bookId }: { bookId: string }, context: { req: Request; res: Response }) => {
             const updatedUser = await User.findOneAndUpdate(
                 { _id: context.req.user._id },
                 { $pull: { savedBooks: { bookId } } },

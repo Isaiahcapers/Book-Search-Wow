@@ -1,4 +1,4 @@
-import { useQuery, useMutation } from '@apollo/client';
+import { useMutation } from '@apollo/client';
 import { SAVE_BOOK } from '../utils/mutations';
 import { useState, useEffect } from 'react';
 import type { FormEvent } from 'react';
@@ -67,18 +67,25 @@ const SearchBooks = () => {
   // create function to handle saving a book to our database
   const handleSaveBook = async (bookId: string) => {
     // find the book in `searchedBooks` state by the matching id
-  const [bookToSave, { error }] = useMutation(SAVE_BOOK);
+  const [saveBook] = useMutation(SAVE_BOOK);
 
-    try {
-      await bookToSave({
-        variables: { bookId }
-      });
+  const bookToSave = searchedBooks.find((book) => book.bookId === bookId);
 
-      // if book successfully saves to user's account, save book id to state
-      setSavedBookIds([...savedBookIds, bookToSave.bookId]);
-    } catch (err) {
-      console.error(err);
-    }
+  if (!bookToSave) {
+    console.error('Book not found');
+    return;
+  }
+
+  try {
+    await saveBook({
+      variables: { book: bookToSave }
+    });
+
+    // if book successfully saves to user's account, save book id to state
+    setSavedBookIds([...savedBookIds, bookToSave.bookId]);
+  } catch (err) {
+    console.error(err);
+  }
   };
 
   return (
